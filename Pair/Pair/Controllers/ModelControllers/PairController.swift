@@ -19,21 +19,25 @@ static let shared = PairController()
         pairs.append(newName)
         saveToPersistentStore()
     }
+    
     func removeName(name: Pair) {
         guard let nameIndex = pairs.firstIndex(of: name) else {return}
         pairs.remove(at: nameIndex)
         saveToPersistentStore()
     }
+    
     func updateNames(name: Pair, with title: String) {
         name.name = title
         saveToPersistentStore()
     }
+    
     // MARK: - Persistence
     func createFileForPersistence() -> URL {
         let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let fileURL = urls[0].appendingPathComponent("Pair.json")
         return fileURL
     }
+    
     func saveToPersistentStore(){
         let jsonEncoder = JSONEncoder()
         do {
@@ -43,6 +47,7 @@ static let shared = PairController()
             print("There was an error saving the data!!!!!! \(encodeingError.localizedDescription)")
         }
     }
+    
     func loadFromPersistantStore() {
         let jsonDecoder = JSONDecoder()
         do {

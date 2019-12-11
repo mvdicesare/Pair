@@ -9,8 +9,9 @@
 import UIKit
 
 class PairTableViewController: UITableViewController  {
-
-    var value: [Pair] = []
+    
+    var sortedArray: [[Pair]] = []
+    var array: [Pair] = []
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -19,7 +20,7 @@ class PairTableViewController: UITableViewController  {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        PairController.shared.loadFromPersistantStore()
+        viewSetup()
     }
     
     
@@ -28,6 +29,8 @@ class PairTableViewController: UITableViewController  {
         let addItem = UIAlertAction(title: "Add", style: .default) { (action) in
             guard let newItem = alert.textFields?[0].text else {return}
             PairController.shared.addName(name: newItem)
+            self.array = PairController.shared.pairs
+            self.sortedArray = [self.array]
             self.tableView.reloadData()
         }
         let cancelButton = UIAlertAction(title: "Cancel", style: .destructive, handler: nil)
@@ -39,49 +42,88 @@ class PairTableViewController: UITableViewController  {
     }
     
     @IBAction func randomButtonPressed(_ sender: Any) {
-        shuffle()
+            pairMaker(of: 2, in: PairController.shared.pairs)
         tableView.reloadData()
     }
     
-    func shuffle () {
-        let names = value
-        let namesShuffled = names.shuffled()
-        let nameArray = Array(namesShuffled)
-        let twoManGroups = nameArray.
+    func viewSetup() {
+        PairController.shared.loadFromPersistantStore()
+        self.array = PairController.shared.pairs
+        self.sortedArray = [self.array]
     }
-
-    // MARK: - Table view data source
-//    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-//        return }
-//          //  PairController.shared.pairs.
-//    }
     
-//    override func numberOfSections(in tableView: UITableView) -> Int {
-//        return PairController.shared.pairs.firs t &&
-//            PairController.shared.pairs.
-//    }
-// if .count % 2 == 0 {
-// return Int(.count) / 2
-// } else {
-// return Int(.count) / 2 + 1
-//
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return PairController.shared.pairs.count
+    func pairMaker<T>(of bunchCount: Int, in input: [T]) -> [[T]] {
+        var currentPair = [T]()
+        var returnValue = [[T]]()
+        let inputShuffled = input.shuffled()
+        for value in inputShuffled {
+            if currentPair.count >= (bunchCount - 1) {
+                currentPair.append(value)
+                returnValue.append(currentPair)
+                currentPair = []
+            } else {
+                currentPair.append(value)
+            }
+        }
+        if !currentPair.isEmpty {
+            returnValue.append(currentPair)
+        }
+        print(returnValue.count)
+        self.sortedArray = returnValue as! [[Pair]]
+        return returnValue
     }
-
+    
+    func popOnlyFriendAlertController() {
+        let alert = UIAlertController(title: "Sorry Bro you got to resort the pairs! ", message: nil, preferredStyle: .alert)
+        let cancelButton = UIAlertAction(title: "Okay", style: .destructive, handler: nil)
+        alert.addAction(cancelButton)
+        self.present(alert, animated: true)
+    }
+    // MARK: - Table view data source
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return "Pair \(section + 1)"
+    }
+    
+    
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        sortedArray.count
+    }
+    
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return sortedArray[section].count
+    }
+    
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       guard let cell = tableView.dequeueReusableCell(withIdentifier: "nameCell", for: indexPath) as? PairTableViewCell else { return UITableViewCell()}
-        let names = PairController.shared.pairs[indexPath.row]
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "nameCell", for: indexPath) as? PairTableViewCell else { return UITableViewCell()}
+        let names = sortedArray[indexPath.section][indexPath.row]
         cell.update(withPress: names)
         return cell
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let nameToDelete = PairController.shared.pairs[indexPath.row]
-            PairController.shared.removeName(name: nameToDelete)
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        }    
+            let itemToDelete = self.sortedArray[indexPath.section][indexPath.row]
+            PairController.shared.removeName(name: itemToDelete)
+            guard let newItemToDelete = array.firstIndex(of: itemToDelete) else {return}
+            array.remove(at: newItemToDelete)
+            self.sortedArray[indexPath.section].remove(at: indexPath.row)
+            DispatchQueue.main.async {
+                tableView.deleteRows(at: [indexPath], with: .fade)
+                self.viewSetup()
+                tableView.reloadData()
+                self.popOnlyFriendAlertController()
+            }
+        }
     }
+    
+    
+    
+    //            let nameToDelete = PairController.shared.pairs[indexPath.row]
+    //            PairController.shared.removeName(name: nameToDelete)
+    //            tableView.deleteRows(at: [indexPath], with: .fade)
+    //        }
+    //    }
 }
