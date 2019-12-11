@@ -68,7 +68,6 @@ class PairTableViewController: UITableViewController  {
         if !currentPair.isEmpty {
             returnValue.append(currentPair)
         }
-        print(returnValue.count)
         self.sortedArray = returnValue as! [[Pair]]
         return returnValue
     }
