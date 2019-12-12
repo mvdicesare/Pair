@@ -49,7 +49,7 @@ class PairTableViewController: UITableViewController  {
             let partyNumber = Int(numberOfGroup) else {
                 youNeedANumber()
                 return}
-            pairMaker(of: partyNumber, in: PairController.shared.pairs)
+        self.sortedArray = pairMaker(of: partyNumber, in: PairController.shared.pairs)
         tableView.reloadData()
     }
     
@@ -75,7 +75,7 @@ class PairTableViewController: UITableViewController  {
         if !currentPair.isEmpty {
             returnValue.append(currentPair)
         }
-        self.sortedArray = returnValue as! [[Pair]]
+       // self.sortedArray = returnValue as! [[Pair]]
         return returnValue
     }
     
