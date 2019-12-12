@@ -10,6 +10,8 @@ import UIKit
 
 class PairTableViewController: UITableViewController  {
     
+    @IBOutlet weak var numberInGroupTextField: UITextField!
+    
     var sortedArray: [[Pair]] = []
     var array: [Pair] = []
     
@@ -42,7 +44,12 @@ class PairTableViewController: UITableViewController  {
     }
     
     @IBAction func randomButtonPressed(_ sender: Any) {
-            pairMaker(of: 2, in: PairController.shared.pairs)
+        guard let numberOfGroup = numberInGroupTextField.text,
+            !numberOfGroup.isEmpty,
+            let partyNumber = Int(numberOfGroup) else {
+                youNeedANumber()
+                return}
+            pairMaker(of: partyNumber, in: PairController.shared.pairs)
         tableView.reloadData()
     }
     
@@ -72,15 +79,19 @@ class PairTableViewController: UITableViewController  {
         return returnValue
     }
     
-    func popOnlyFriendAlertController() {
-        let alert = UIAlertController(title: "Sorry Bro you got to resort the pairs! ", message: nil, preferredStyle: .alert)
+    func youNeedANumber() {
+        let alert = UIAlertController(title: "Hey smart guy you need to put a number in here ", message: "or you left it blank", preferredStyle: .alert)
         let cancelButton = UIAlertAction(title: "Okay", style: .destructive, handler: nil)
         alert.addAction(cancelButton)
         self.present(alert, animated: true)
     }
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Pair \(section + 1)"
+        if sortedArray.count == 1 {
+        return "Name staging for sort"
+        } else {
+        return "Group \(section + 1)"
+        }
     }
     
     
@@ -109,20 +120,34 @@ class PairTableViewController: UITableViewController  {
             guard let newItemToDelete = array.firstIndex(of: itemToDelete) else {return}
             array.remove(at: newItemToDelete)
             self.sortedArray[indexPath.section].remove(at: indexPath.row)
+            }
             DispatchQueue.main.async {
                 tableView.deleteRows(at: [indexPath], with: .fade)
-                self.viewSetup()
+                if self.sortedArray.contains([]) {
+                    self.sortedArray.remove(at: indexPath.section)
+                    print("empty array")
                 tableView.reloadData()
-                self.popOnlyFriendAlertController()
-            }
+                }
+              //  self.popOnlyFriendAlertController()
         }
     }
     
-    
+    // MARK: -  crap that did not work
+    /**
+     tableView.reloadSectionIndexTitles(
+     tableView.beginUpdates()
+     tableView.deleteSections(indexToDelete, with: .fade)
+     
+     
+     var sectionToDelete = self.sortedArray[indexPath.section]
+     self.sortedArray.remove(at: sectionToDelete)
+     */
     
     //            let nameToDelete = PairController.shared.pairs[indexPath.row]
     //            PairController.shared.removeName(name: nameToDelete)
     //            tableView.deleteRows(at: [indexPath], with: .fade)
+    
+    
     //        }
     //    }
 }
